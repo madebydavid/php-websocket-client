@@ -154,13 +154,13 @@ class WebSocketClient
         }
 
         if ($this->connected && !empty($response['content'])) {
+            $content = trim($response['content']);
 
             /* Added to avoid the UnderflowException("Can not return partial message") from Ratchet */
-            if (0 == strlen($response['content'])) {
+            if (0 == strlen($content)) {
                 return;
             }
 
-            $content = trim($response['content']);
             $frame = new Frame();
             $frame->addBuffer($content);
             $content = $frame->getPayload();
