@@ -31,6 +31,12 @@ class WebSocketClient
     /** @var string $path */
     private $path;
 
+    /** @var string $username */
+    private $username;
+
+    /** @var string $password */
+    private $password;
+
     /** @var Connection $socket */
     private $socket;
 
@@ -47,12 +53,14 @@ class WebSocketClient
      * @param int $port
      * @param string $path
      */
-    function __construct(WebSocketClientInterface $client, StreamSelectLoop $loop, $host = '127.0.0.1', $port = 8080, $path = '/')
+    function __construct(WebSocketClientInterface $client, StreamSelectLoop $loop, $host = '127.0.0.1', $port = 8080, $path = '/', $username = null, $password = null)
     {
         $this->setLoop($loop)
             ->setHost($host)
             ->setPort($port)
             ->setPath($path)
+            ->setUsername($username)
+            ->setPassword($password)
             ->setClient($client)
             ->setKey($this->generateToken(self::TOKEN_LENGHT));
 
@@ -202,6 +210,7 @@ class WebSocketClient
         "User-Agent: PHPWebSocketClient/" . self::VERSION . "\r\n" .
         "Upgrade: websocket" . "\r\n" .
         "Connection: Upgrade" . "\r\n" .
+        ((null == $this->getUsername()) ? "" : ("Authorization: Basic {$this->getAuthorizationHeader()}"."\r\n")).
         "Sec-WebSocket-Version: 13" . "\r\n" . "\r\n";
     }
 
@@ -371,6 +380,50 @@ class WebSocketClient
     public function getPath()
     {
         return $this->path;
+    }
+
+    /**
+     * @param string $username
+     * @return self
+     */
+    public function setUsername($username)
+    {
+        $this->username = $username;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername()
+    {
+        return $this->username;
+    }
+
+    /**
+     * @param string $password
+     * @return self
+     */
+    public function setPassword($password)
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthorizationHeader()
+    {
+        return base64_encode($this->getUsername().':'.$this->getPassword());
     }
 
     /**
